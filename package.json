@@ -1,0 +1,31 @@
+{
+  "name": "neon-metro-rush",
+  "version": "1.0.0",
+  "description": "Neon Metro Rush - an original 3D endless runner set in a futuristic Indian metro city. Built with TypeScript, Vite and Three.js as a Computer Graphics major project.",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "0.169.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.13.0",
+    "@types/three": "0.169.0",
+    "eslint": "9.13.0",
+    "globals": "15.11.0",
+    "typescript": "5.6.3",
+    "typescript-eslint": "8.12.2",
+    "vite": "5.4.10",
+    "vitest": "2.1.4"
+  }
+}

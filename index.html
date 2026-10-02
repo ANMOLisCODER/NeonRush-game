@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#070816" />
+    <meta
+      name="description"
+      content="Neon Metro Rush — an original 3D endless runner through a futuristic Indian metro city. TypeScript + Three.js."
+    />
+    <title>Neon Metro Rush</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070816'/%3E%3Cpath d='M14 46 L14 18 L32 38 L32 18' stroke='%2339d0ff' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='48' cy='20' r='6' fill='%23ff4fd8'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game-canvas" aria-label="Neon Metro Rush game viewport"></canvas>
+
+      <!-- ============ LOADING ============ -->
+      <div id="screen-loading" class="screen screen--visible">
+        <div class="loading-wrap">
+          <h1 class="game-logo">NEON<span>METRO</span>RUSH</h1>
+          <div class="progress-track">
+            <div id="loading-bar" class="progress-fill"></div>
+          </div>
+          <p id="loading-status" class="loading-status">Booting metro systems…</p>
+        </div>
+      </div>
+
+      <!-- ============ FATAL ERROR ============ -->
+      <div id="screen-fatal" class="screen">
+        <div class="panel panel--center">
+          <h2 class="panel-title">Unable to start</h2>
+          <p id="fatal-message" class="panel-text">
+            WebGL is not available on this device or browser. Please try a
+            modern browser with hardware acceleration enabled.
+          </p>
+          <button class="btn btn-primary" onclick="location.reload()">Reload</button>
+        </div>
+      </div>
+
+      <!-- ============ MAIN MENU ============ -->
+      <div id="screen-menu" class="screen">
+        <div class="menu-wrap">
+          <h1 class="game-logo game-logo--big">NEON<span>METRO</span>RUSH</h1>
+          <p class="tagline">An endless run through the city of tomorrow</p>
+          <nav class="menu-buttons" aria-label="Main menu">
+            <button id="btn-play" class="btn btn-primary btn-big">▶ PLAY</button>
+            <button id="btn-howto" class="btn">How to Play</button>
+            <button id="btn-concepts" class="btn">Graphics Concepts</button>
+            <button id="btn-settings" class="btn">Settings</button>
+            <button id="btn-credits" class="btn">Credits</button>
+          </nav>
+          <div id="menu-profile" class="profile-strip">
+            <span>🏆 BEST <b id="menu-highscore">0</b></span>
+            <span>🪙 COINS <b id="menu-coins">0</b></span>
+            <span>📏 BEST DIST <b id="menu-distance">0 m</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ HUD ============ -->
+      <div id="screen-hud" class="screen hud">
+        <div class="hud-top">
+          <div class="hud-stats">
+            <div class="hud-chip"><span class="hud-label">SCORE</span><span id="hud-score" class="hud-value">0</span></div>
+            <div class="hud-chip"><span class="hud-label">BEST</span><span id="hud-highscore" class="hud-value hud-value--dim">0</span></div>
+            <div class="hud-chip"><span class="hud-label">🪙</span><span id="hud-coins" class="hud-value hud-value--coin">0</span></div>
+            <div class="hud-chip"><span class="hud-label">DIST</span><span id="hud-distance" class="hud-value">0 m</span></div>
+            <div class="hud-chip"><span class="hud-label">MULT</span><span id="hud-multiplier" class="hud-value hud-value--mult">x1</span></div>
+          </div>
+          <div class="hud-right">
+            <div id="hud-lives" class="hud-lives" aria-label="Lives remaining">
+              <span class="life">♥</span><span class="life">♥</span><span class="life">♥</span>
+            </div>
+            <button id="btn-pause" class="btn-icon" aria-label="Pause">❚❚</button>
+          </div>
+        </div>
+        <div id="hud-powerups" class="hud-powerups"></div>
+        <div id="toast-container" class="toast-container"></div>
+      </div>
+
+      <!-- ============ PAUSE ============ -->
+      <div id="screen-pause" class="screen">
+        <div class="panel panel--center">
+          <h2 class="panel-title">PAUSED</h2>
+          <div class="menu-buttons">
+            <button id="btn-resume" class="btn btn-primary">Resume</button>
+            <button id="btn-pause-restart" class="btn">Restart</button>
+            <button id="btn-pause-settings" class="btn">Settings</button>
+            <button id="btn-pause-menu" class="btn">Main Menu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ GAME OVER ============ -->
+      <div id="screen-gameover" class="screen">
+        <div class="panel panel--center">
+          <h2 class="panel-title panel-title--bad">RUN COMPLETE</h2>
+          <div class="stats-grid">
+            <div class="stat"><span class="stat-label">SCORE</span><span id="go-score" class="stat-value">0</span></div>
+            <div class="stat"><span class="stat-label">BEST</span><span id="go-highscore" class="stat-value">0</span></div>
+            <div class="stat"><span class="stat-label">DISTANCE</span><span id="go-distance" class="stat-value">0 m</span></div>
+            <div class="stat"><span class="stat-label">COINS</span><span id="go-coins" class="stat-value">0</span></div>
+          </div>
+          <p id="go-newbest" class="new-best hidden">★ NEW HIGH SCORE ★</p>
+          <div class="menu-buttons menu-buttons--row">
+            <button id="btn-restart" class="btn btn-primary">↻ Restart</button>
+            <button id="btn-gameover-menu" class="btn">Main Menu</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ HOW TO PLAY ============ -->
+      <div id="screen-howto" class="screen">
+        <div class="panel panel--scroll">
+          <h2 class="panel-title">HOW TO PLAY</h2>
+          <div class="howto-grid">
+            <div class="howto-card">
+              <h3>🖥️ Desktop</h3>
+              <ul>
+                <li><kbd>←</kbd>/<kbd>A</kbd> · <kbd>→</kbd>/<kbd>D</kbd> — switch lane</li>
+                <li><kbd>↑</kbd>/<kbd>W</kbd>/<kbd>Space</kbd> — jump</li>
+                <li><kbd>↓</kbd>/<kbd>S</kbd> — slide</li>
+                <li><kbd>P</kbd>/<kbd>Esc</kbd> — pause · <kbd>R</kbd> — restart · <kbd>F3</kbd> — debug</li>
+              </ul>
+            </div>
+            <div class="howto-card">
+              <h3>📱 Mobile</h3>
+              <ul>
+                <li>Swipe left / right — switch lane</li>
+                <li>Swipe up or tap — jump</li>
+                <li>Swipe down — slide</li>
+                <li>❚❚ button — pause</li>
+              </ul>
+            </div>
+            <div class="howto-card">
+              <h3>🎯 Goal</h3>
+              <ul>
+                <li>Dodge barriers, signs and metro trains</li>
+                <li>Collect ⬡ tokens and power-ups</li>
+                <li>Clean running raises your multiplier up to x5</li>
+                <li>You have 3 lives — shields absorb one hit</li>
+              </ul>
+            </div>
+            <div class="howto-card">
+              <h3>⚡ Power-ups</h3>
+              <ul>
+                <li><b style="color:#ffc23c">Magnet</b> — attracts nearby tokens</li>
+                <li><b style="color:#39d0ff">Shield</b> — absorbs one collision</li>
+                <li><b style="color:#ff4fd8">x2 Score</b> — double points</li>
+                <li><b style="color:#7dff6a">Jet Boost</b> — fly over everything</li>
+              </ul>
+            </div>
+          </div>
+          <button class="btn btn-back" data-back="menu">← Back</button>
+        </div>
+      </div>
+
+      <!-- ============ GRAPHICS CONCEPTS ============ -->
+      <div id="screen-concepts" class="screen">
+        <div class="panel panel--scroll">
+          <h2 class="panel-title">GRAPHICS CONCEPTS</h2>
+          <p class="panel-sub">Where each Computer Graphics topic appears in Neon Metro Rush</p>
+          <div id="concepts-list" class="concepts-list"></div>
+          <button class="btn btn-back" data-back="menu">← Back</button>
+        </div>
+      </div>
+
+      <!-- ============ SETTINGS ============ -->
+      <div id="screen-settings" class="screen">
+        <div class="panel panel--scroll">
+          <h2 class="panel-title">SETTINGS</h2>
+          <div class="settings-list">
+            <div class="setting-row">
+              <label for="set-quality">Graphics quality</label>
+              <div class="seg-control" id="set-quality">
+                <button data-quality="low">Low</button>
+                <button data-quality="medium">Medium</button>
+                <button data-quality="high">High</button>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label for="set-master">Master volume <span id="set-master-val">80%</span></label>
+              <input id="set-master" type="range" min="0" max="100" value="80" />
+            </div>
+            <div class="setting-row">
+              <label for="set-music">Music volume <span id="set-music-val">55%</span></label>
+              <input id="set-music" type="range" min="0" max="100" value="55" />
+            </div>
+            <div class="setting-row">
+              <label for="set-sfx">Effects volume <span id="set-sfx-val">80%</span></label>
+              <input id="set-sfx" type="range" min="0" max="100" value="80" />
+            </div>
+            <div class="setting-row">
+              <label for="set-shake">Camera shake</label>
+              <input id="set-shake" type="checkbox" checked />
+            </div>
+            <div class="setting-row">
+              <label for="set-fps">Show FPS</label>
+              <input id="set-fps" type="checkbox" />
+            </div>
+            <div class="setting-row">
+              <label for="set-mute">Mute all audio</label>
+              <input id="set-mute" type="checkbox" />
+            </div>
+            <div class="setting-row">
+              <label>Runner style</label>
+              <div id="set-variants" class="variant-row"></div>
+            </div>
+            <div class="setting-row">
+              <label>Display</label>
+              <button id="btn-fullscreen" class="btn btn-small">⛶ Fullscreen</button>
+            </div>
+          </div>
+          <button id="btn-settings-back" class="btn btn-back">← Back</button>
+        </div>
+      </div>
+
+      <!-- ============ CREDITS ============ -->
+      <div id="screen-credits" class="screen">
+        <div class="panel panel--scroll">
+          <h2 class="panel-title">CREDITS</h2>
+          <div class="credits-body">
+            <p><b>Neon Metro Rush</b> — an original 3D endless runner built as a
+            Computer Graphics major project.</p>
+            <p>Design · Code · 3D · Procedural Art · Audio Synthesis<br />
+            <span class="dim">Solo student project, 2025–26</span></p>
+            <p><b>Engine &amp; libraries</b><br />
+            <span class="dim">Three.js (MIT) · TypeScript (Apache-2.0) · Vite (MIT) · Vitest (MIT)</span></p>
+            <p><b>Assets</b><br />
+            <span class="dim">100% procedural — all textures, models, characters and sounds are
+            generated at runtime by original code. No third-party art or audio is used.
+            See ASSET_CREDITS.md.</span></p>
+            <p><b>Inspiration</b><br />
+            <span class="dim">The lane-based endless-runner genre and the neon night
+            aesthetic of Indian metro cities. All names, signs, characters and
+            designs are fictional and original.</span></p>
+          </div>
+          <button class="btn btn-back" data-back="menu">← Back</button>
+        </div>
+      </div>
+
+      <!-- ============ DEBUG OVERLAY ============ -->
+      <div id="debug-overlay" class="debug-overlay hidden"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
